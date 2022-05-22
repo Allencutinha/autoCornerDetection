@@ -42,6 +42,7 @@ using namespace std;
 using std::ifstream;
 
 #include "cvcalibinit3.h"
+#include "corner_det.h"
 /*
 static int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
                              CvPoint2D32f* out_corners, int* out_corner_count,
@@ -158,6 +159,7 @@ int main( int argc, char** argv )
 	{
 		// Initializations
 		IplImage *view = 0, *view_gray = 0;
+		cv::Mat img = cv::imread("../VMRImage0.jpg",1);
 		int count = 0, blink = 0;
 		CvSize text_size = {0,0};
 		int base_line = 0;
@@ -176,9 +178,9 @@ int main( int argc, char** argv )
 					continue;
 				// Load as BGR 3 channel image
 				view = cvLoadImage( imagename_str.c_str(), 1 );
-				cv::Mat img = cv::imread("../VMRImage0.jpg",1);
-				cv::imshow("img", img);
-				cv::waitKey(0);
+				//cv::Mat img = cv::imread("../VMRImage0.jpg",1);
+				//cv::imshow("img", img);
+				//cv::waitKey(0);
 				// Currently the following file formats are supported: 
 				// Windows bitmaps				BMP, DIB
 				// JPEG files					JPEG, JPG, JPE
@@ -232,6 +234,9 @@ int main( int argc, char** argv )
 		else
 		{
 			found = cvFindChessboardCorners3( view, board_size,
+					image_points_buf, &count, min_number_of_corners );
+					
+			found = findChessboardCorners3( img, board_size,
 					image_points_buf, &count, min_number_of_corners );
 		}
 

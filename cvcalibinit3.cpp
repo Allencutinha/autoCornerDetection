@@ -318,8 +318,10 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 		// line around the image edge. Otherwise FindContours will miss those 
 		// clipped rectangle contours. The border color will be the image mean,
 		// because otherwise we risk screwing up filters like cvSmooth()
-        cvRectangle( thresh_img, cvPoint(0,0), cvPoint(thresh_img->cols-1,
-                     thresh_img->rows-1), CV_RGB(255,255,255), 3, 8);
+        
+        cv::Mat m = cv::cvarrToMat(thresh_img); 
+        cv::rectangle(m, cv::Rect(cv::Point(0,0), cv::Point(thresh_img->cols-1,
+                     thresh_img->rows-1)), cv::Scalar(255,255,255),3);
 
 
 		// Generate quadrangles in the following function
@@ -342,10 +344,11 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 		cvCopy( thresh_img, imageCopy2);
 		cvCvtColor( imageCopy2, imageCopy22, CV_GRAY2BGR );
 
+		cv::Mat imageCopy22Mat = cv::cvarrToMat(imageCopy22); 
 		for( int kkk = 0; kkk < quad_count; kkk++ )
 		{
 			CvCBQuad* print_quad = &quads[kkk];
-			CvPoint pt[4];
+			cv::Point pt[4];
 			pt[0].x = (int)print_quad->corners[0]->pt.x;
 			pt[0].y = (int)print_quad->corners[0]->pt.y;
 			pt[1].x = (int)print_quad->corners[1]->pt.x;
@@ -354,10 +357,11 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 			pt[2].y = (int)print_quad->corners[2]->pt.y;
 			pt[3].x = (int)print_quad->corners[3]->pt.x;
 			pt[3].y = (int)print_quad->corners[3]->pt.y;
-			cvLine( imageCopy22, pt[0], pt[1], CV_RGB(255,255,0), 1, 8 );
-			cvLine( imageCopy22, pt[1], pt[2], CV_RGB(255,255,0), 1, 8 );
-			cvLine( imageCopy22, pt[2], pt[3], CV_RGB(255,255,0), 1, 8 );
-			cvLine( imageCopy22, pt[3], pt[0], CV_RGB(255,255,0), 1, 8 );
+			
+			cv::line( imageCopy22Mat, pt[0], pt[1], CV_RGB(255,255,0), 1, 8 );
+			cv::line( imageCopy22Mat, pt[1], pt[2], CV_RGB(255,255,0), 1, 8 );
+			cv::line( imageCopy22Mat, pt[2], pt[3], CV_RGB(255,255,0), 1, 8 );
+			cv::line( imageCopy22Mat, pt[3], pt[0], CV_RGB(255,255,0), 1, 8 );
 		}
 		cvShowImage( "all found quads per dilation run", imageCopy22);
 		//cvSaveImage("pictureVis/allFoundQuads.png", imageCopy22);
@@ -450,6 +454,7 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 				cvNamedWindow( "Corners in increasing order", 1 );
 				IplImage* imageCopy11 = cvCreateImage( cvGetSize(thresh_img), 8, 3 );
 				cvCopy( imageCopy22, imageCopy11);
+				cv::Mat imageCopy11Mat = cv::cvarrToMat(imageCopy11); 
 				// Assume min and max rows here, since we are outside of the
 				// relevant function
 				int min_row = -15;
@@ -469,20 +474,18 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 										// draw the row and column numbers
 										char str[255];
 										sprintf(str,"%i/%i",i,j);
-										CvFont font;
-										cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 0.2, 0.2, 0, 1);
-										CvPoint ptt;
+										cv::Point ptt;
 										ptt.x = (int) quad_group[k]->corners[l]->pt.x;
 										ptt.y = (int) quad_group[k]->corners[l]->pt.y;
 										// Mark central corners with a different color than 
 										// border corners
 										if ((quad_group[k])->corners[l]->needsNeighbor == false)
 										{
-											cvPutText(imageCopy11, str, ptt, &font, CV_RGB(0,255,0));
+											cv::putText(imageCopy11Mat, str, ptt, cv::FONT_HERSHEY_SIMPLEX, 1,CV_RGB(0,255,0));
 										}
 										else
 										{
-											cvPutText(imageCopy11, str, ptt, &font, CV_RGB(255,0,0));
+											cv::putText(imageCopy11Mat, str, ptt, cv::FONT_HERSHEY_SIMPLEX, 1, CV_RGB(255,0,0));
 										}
 										cvShowImage( "Corners in increasing order", imageCopy11);
 										//cvSaveImage("pictureVis/CornersIncreasingOrder.tif", imageCopy11);
@@ -527,7 +530,9 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 	// If enough corners have been found already, then there is no need for PART 2 ->EXIT
 	found = mrWriteCorners( output_quad_group, max_count, pattern_size, min_number_of_corners);
 		if (found == -1 || found == 1){
-			EXIT;
+			//EXIT;
+			
+		return -1;
 		}
 
 	// PART 2: AUGMENT LARGEST PATTERN
@@ -561,16 +566,17 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 		if (dilations >= 6)
 			cvDilate( thresh_img, thresh_img, kernel2, 1);
     
-        cvRectangle( thresh_img, cvPoint(0,0), cvPoint(thresh_img->cols-1,
-                     thresh_img->rows-1), CV_RGB(255,255,255), 3, 8);
+		cv::Mat thresh_imgMat = cv::cvarrToMat(thresh_img); 
+        cv::rectangle( thresh_imgMat, cv::Rect(cv::Point(0,0), cv::Point(thresh_img->cols-1,
+                     thresh_img->rows-1)), CV_RGB(255,255,255), 3, 8);
 
 //VISUALIZATION--------------------------------------------------------------
 #if VIS
 		cvNamedWindow( "PART2: Starting Point", 1 );
 		IplImage* imageCopy23 = cvCreateImage( cvGetSize(thresh_img), 8, 3 );
 		cvCvtColor( thresh_img, imageCopy23, CV_GRAY2BGR );
-		
-		CvPoint *pt = new CvPoint[4];
+		cv::Mat imageCopy23Mat = cv::cvarrToMat(imageCopy23); 
+		cv::Point *pt = new cv::Point[4];
 		for( int kkk = 0; kkk < max_count; kkk++ )
 		{ 
 			CvCBQuad* print_quad2 = output_quad_group[kkk];
@@ -580,7 +586,7 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 				pt[kkkk].y = (int) print_quad2->corners[kkkk]->pt.y;
 			}
 			// draw a filled polygon
-			cvFillConvexPoly ( imageCopy23, pt, 4, CV_RGB(255*0.1,255*0.25,255*0.6));
+			cv::fillConvexPoly ( imageCopy23Mat, pt, 4, CV_RGB(255*0.1,255*0.25,255*0.6));
 		}
 		// indicate the dilation run
 		char str[255];
@@ -617,10 +623,10 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 			pt[2].y = (int)print_quad->corners[2]->pt.y;
 			pt[3].x = (int)print_quad->corners[3]->pt.x;
 			pt[3].y = (int)print_quad->corners[3]->pt.y;
-			cvLine( imageCopy23, pt[0], pt[1], CV_RGB(255,0,0), 1, 8 );
-			cvLine( imageCopy23, pt[1], pt[2], CV_RGB(255,0,0), 1, 8 );
-			cvLine( imageCopy23, pt[2], pt[3], CV_RGB(255,0,0), 1, 8 );
-			cvLine( imageCopy23, pt[3], pt[0], CV_RGB(255,0,0), 1, 8 );
+			cv::line( imageCopy23Mat, pt[0], pt[1], CV_RGB(255,0,0), 1, 8 );
+			cv::line( imageCopy23Mat, pt[1], pt[2], CV_RGB(255,0,0), 1, 8 );
+			cv::line( imageCopy23Mat, pt[2], pt[3], CV_RGB(255,0,0), 1, 8 );
+			cv::line( imageCopy23Mat, pt[3], pt[0], CV_RGB(255,0,0), 1, 8 );
 			//compute center of print_quad
 			int x1 = (pt[0].x + pt[1].x)/2;
 			int y1 = (pt[0].y + pt[1].y)/2;
@@ -707,10 +713,10 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 					pt[2].y = (int)print_quad->corners[2]->pt.y;
 					pt[3].x = (int)print_quad->corners[3]->pt.x;
 					pt[3].y = (int)print_quad->corners[3]->pt.y;
-					cvLine( imageCopy23, pt[0], pt[1], CV_RGB(255,0,0), 2, 8 );
-					cvLine( imageCopy23, pt[1], pt[2], CV_RGB(255,0,0), 2, 8 );
-					cvLine( imageCopy23, pt[2], pt[3], CV_RGB(255,0,0), 2, 8 );
-					cvLine( imageCopy23, pt[3], pt[0], CV_RGB(255,0,0), 2, 8 );
+					cv::line( imageCopy23Mat, pt[0], pt[1], CV_RGB(255,0,0), 2, 8 );
+					cv::line( imageCopy23Mat, pt[1], pt[2], CV_RGB(255,0,0), 2, 8 );
+					cv::line( imageCopy23Mat, pt[2], pt[3], CV_RGB(255,0,0), 2, 8 );
+					cv::line( imageCopy23Mat, pt[3], pt[0], CV_RGB(255,0,0), 2, 8 );
 				}
 
 				cvWaitKey(0);
@@ -733,10 +739,10 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 							pt[2].y = (int)print_quad->corners[2]->pt.y;
 							pt[3].x = (int)print_quad->corners[3]->pt.x;
 							pt[3].y = (int)print_quad->corners[3]->pt.y;
-							cvLine( imageCopy23, pt[0], pt[1], CV_RGB(255,0,0), 2, 8 );
-							cvLine( imageCopy23, pt[1], pt[2], CV_RGB(255,0,0), 2, 8 );
-							cvLine( imageCopy23, pt[2], pt[3], CV_RGB(255,0,0), 2, 8 );
-							cvLine( imageCopy23, pt[3], pt[0], CV_RGB(255,0,0), 2, 8 );
+							cv::line( imageCopy23Mat, pt[0], pt[1], CV_RGB(255,0,0), 2, 8 );
+							cv::line( imageCopy23Mat, pt[1], pt[2], CV_RGB(255,0,0), 2, 8 );
+							cv::line( imageCopy23Mat, pt[2], pt[3], CV_RGB(255,0,0), 2, 8 );
+							cv::line( imageCopy23Mat, pt[3], pt[0], CV_RGB(255,0,0), 2, 8 );
 						}
 					}
 				}
@@ -760,7 +766,9 @@ int cvFindChessboardCorners3( const void* arr, CvSize pattern_size,
 				// Go to __END__, if enough corners have been found
 				found = mrWriteCorners( output_quad_group, max_count, pattern_size, min_number_of_corners);
 				if (found == -1 || found == 1){
-					EXIT;
+					//EXIT;
+					
+		return -1;
 				}
 			}
 		}
@@ -2380,9 +2388,9 @@ static int mrWriteCorners( CvCBQuad **output_quads, int count, CvSize pattern_si
 
 
 	// Open the output files
-	ofstream cornersX("cToMatlab/cornersX.txt");
-	ofstream cornersY("cToMatlab/cornersY.txt");
-	ofstream cornerInfo("cToMatlab/cornerInfo.txt");
+	ofstream cornersX("../cToMatlab/cornersX.txt");
+	ofstream cornersY("../cToMatlab/cornersY.txt");
+	ofstream cornerInfo("../cToMatlab/cornerInfo.txt");
 
 
 	// Write the corners in increasing order to the output file
