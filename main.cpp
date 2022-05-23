@@ -167,17 +167,6 @@ int main(int argc, char **argv) {
                     continue;
                 // Load as BGR 3 channel image
                 view = cvLoadImage(imagename_str.c_str(), 1);
-                // cv::Mat img = cv::imread("../VMRImage0.jpg",1);
-                // cv::imshow("img", img);
-                // cv::waitKey(0);
-                // Currently the following file formats are supported:
-                // Windows bitmaps				BMP, DIB
-                // JPEG files					JPEG, JPG, JPE
-                // Portable Network Graphics	PNG
-                // Portable image format		PBM, PGM, PPM
-                // Sun rasters					SR, RAS
-                // TIFF files					TIFF, TIF
-                // NOTABLY: GIF IS NOT SUPPORTED!
             }
         }
 

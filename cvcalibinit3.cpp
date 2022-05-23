@@ -256,7 +256,7 @@ int cvFindChessboardCorners3(const void *arr, CvSize pattern_size,
 #if VIS
         cvNamedWindow("Original Image", 1);
         cvShowImage("Original Image", img);
-        // cvSaveImage("pictureVis/OrigImg.png", img);
+        cvSaveImage("../outputImages/OrigImg.png", img);
         cvWaitKey(0);
 #endif
         // END------------------------------------------------------------------------
@@ -295,7 +295,7 @@ int cvFindChessboardCorners3(const void *arr, CvSize pattern_size,
 #if VIS
         cvNamedWindow("After adaptive Threshold (and Dilation)", 1);
         cvShowImage("After adaptive Threshold (and Dilation)", thresh_img);
-        // cvSaveImage("pictureVis/afterDilation.png", thresh_img);
+        cvSaveImage("../outputImages/afterDilation.png", thresh_img);
         cvWaitKey(0);
 #endif
         // END------------------------------------------------------------------------
@@ -354,7 +354,7 @@ int cvFindChessboardCorners3(const void *arr, CvSize pattern_size,
             cv::line(imageCopy22Mat, pt[3], pt[0], CV_RGB(255, 255, 0), 1, 8);
         }
         cvShowImage("all found quads per dilation run", imageCopy22);
-        // cvSaveImage("pictureVis/allFoundQuads.png", imageCopy22);
+        cvSaveImage("../outputImages/allFoundQuads.png", imageCopy22);
         cvWaitKey(0);
 #endif
         // END------------------------------------------------------------------------
@@ -384,7 +384,7 @@ int cvFindChessboardCorners3(const void *arr, CvSize pattern_size,
             }
         }
         cvShowImage("quads with neighbors", imageCopy3);
-        // cvSaveImage("pictureVis/allFoundNeighbors.png", imageCopy3);
+        cvSaveImage("../outputImages/allFoundNeighbors.png", imageCopy3);
         cvWaitKey(0);
 #endif
         // END------------------------------------------------------------------------
@@ -592,7 +592,7 @@ int cvFindChessboardCorners3(const void *arr, CvSize pattern_size,
         // cvPutText(imageCopy23, str, cvPoint(20,20), &font, CV_RGB(0,255,0));
 
         cvShowImage("PART2: Starting Point", imageCopy23);
-        cvSaveImage("pictureVis/part2Start.png", imageCopy23);
+        cvSaveImage("../outputImages/part2Start.png", imageCopy23);
         cvWaitKey(0);
 #endif
         // END------------------------------------------------------------------------
@@ -670,7 +670,7 @@ int cvFindChessboardCorners3(const void *arr, CvSize pattern_size,
         }
 
         cvShowImage("PART2: Starting Point", imageCopy23);
-        cvSaveImage("pictureVis/part2StartAndNewQuads.png", imageCopy23);
+        cvSaveImage("../outputImages/part2StartAndNewQuads.png", imageCopy23);
         cvWaitKey(0);
 #endif
         // END------------------------------------------------------------------------
@@ -1317,13 +1317,15 @@ static void mrLabelQuadGroup(CvCBQuad **quad_group, int count,
 
     // Check the two flags:
     //	-	If one is true and the other false, then the pattern target
-    //		size was reached in in one direction -> We can check, whether the
-    //target 		pattern size is also reached in the other direction
+    //		size was reached in in one direction -> We can check, whether
+    // the target 		pattern size is also reached in the other
+    // direction
     //  -	If both are set to true, then we deal with a square board -> do
     //  nothing -	If both are set to false -> There is a possibility that
     //  the larger side is
-    //		larger than the smaller target size -> Check and if true, then check
-    //whether 		the other side has the same size as the smaller target size
+    //		larger than the smaller target size -> Check and if true, then
+    // check whether 		the other side has the same size as the smaller
+    // target size
     if ((flagSmallerDim1 == false && flagSmallerDim2 == true)) {
         // Larger target pattern size is in row direction, check wheter smaller
         // target pattern size is reached in column direction
@@ -2375,6 +2377,7 @@ static int mrWriteCorners(CvCBQuad **output_quads, int count,
     ofstream cornersX("../cToMatlab/cornersX.txt");
     ofstream cornersY("../cToMatlab/cornersY.txt");
     ofstream cornerInfo("../cToMatlab/cornerInfo.txt");
+    ofstream cornersImage("../cToMatlab/cornersImage.txt");
 
     // Write the corners in increasing order to the output file
     for (int i = min_row + 1; i < maxPattern_sizeRow + min_row + 1; i++) {
@@ -2396,7 +2399,10 @@ static int mrWriteCorners(CvCBQuad **output_quads, int count,
                             cornersX << " ";
                             cornersY << (output_quads[k])->corners[l]->pt.y;
                             cornersY << " ";
-
+                            cornersImage << (output_quads[k])->corners[l]->pt.x
+                                         << " "
+                                         << (output_quads[k])->corners[l]->pt.y
+                                         << std::endl;
                             corner_count++;
                         }
 
@@ -2419,6 +2425,7 @@ static int mrWriteCorners(CvCBQuad **output_quads, int count,
                 cornersX << " ";
                 cornersY << -1;
                 cornersY << " ";
+                cornersImage << "-1 -1\n";
             }
         }
         cornersX << endl;
